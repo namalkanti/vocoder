@@ -53,12 +53,5 @@ class SynthesizerTest(unittest.TestCase):
         result_array = fake_synthesizer._merge_frames(input_array)
         assert_array_almost_equal(expected_array, result_array)
 
-class VocoderTest(unittest.TestCase):
-    """
-    Tests for vocoder class.
-    """
-    pass
-
-
 if __name__ == "__main__":
     unittest.main()

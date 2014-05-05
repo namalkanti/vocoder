@@ -56,3 +56,6 @@ class Synthesizer():
     def get_frame_array(self):
         return self._frame_array
 
+    def get_fs(self):
+        return self.get_frame_array().get_fs()
+
