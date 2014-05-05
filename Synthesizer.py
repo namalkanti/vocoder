@@ -28,9 +28,9 @@ class Synthesizer():
 
     def _reconstruct(self, lpc_frame):
         gain = lpc_frame.get_gain()
-        coefficients = loc_frame.get_coefficients()
-        residue = self._process_residue(lpc_frame.get_residue)
-        return sig.lfilter(np.asarray(gain), coefficients, residue) 
+        coefficients = lpc_frame.get_coefficients()
+        residue = self._process_residue(lpc_frame.get_residue())
+        return sig.lfilter(np.asarray([gain]), coefficients, residue) 
 
     def _process_residue(self, residue):
         return residue

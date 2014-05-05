@@ -4,7 +4,7 @@ class LPCFrame():
     Contains residue data, gain, and lpc coefficients for frame of signal. 
     """
 
-    def __init(self, residue, gain, coefficients, overlap):
+    def __init__(self, residue, gain, coefficients):
         """
         Creates an LPC frame from a residue, gain, and coeffcients.
         """
@@ -48,10 +48,10 @@ class LPCFrameArrayBuilder():
         if self._frames == None:
             self._frames = np.array(*args)
         else:
-            self._frames = np.concatenate((self._frames, np.array(*args)))
+            self._frames = np.append(self._frames, np.array(*args))
 
     def build(self):
-        return LPCFrameArray(self._fs, self._frame_size, self._overlap, self._frames)
+        return LPCFrameArray(self._fs, self._frame_size, self._frames)
 
 class LPCFrameArray():
     """

@@ -5,7 +5,7 @@ import scipy.linalg as linalg
 
 from segmentaxis import segment_axis
 
-from LPCStructures import LPCFrameArrayBuilder
+from LPCStructures import LPCFrameArrayBuilder, LPCFrame
 
 class Analyzer():
     """
@@ -25,8 +25,8 @@ class Analyzer():
         """
         Returns a numpy array of LPC frames for the given signal.
         """
-        signal_windows = self._window_signal()
-        lpc_array = self._estimate_windows(signal_windows)
+        signal_windows = self.window_signal()
+        lpc_array = self.estimate_windows(signal_windows)
         return lpc_array
 
     def window_signal(self):
@@ -67,11 +67,11 @@ class Analyzer():
         """
         length = signal.size
         autocorrelation = sig.fftconvolve(signal, signal[::-1])
-        autocorr_coefficients = autocorrelation[autorcorrelation.size/2:][:(order + 1)]
-        R = linalg.toeplitz(autocorr_coefficients)
-        lpc_coefficients = np.dot(linalg.inv(R), autocor_coefficients[1:order+1])
-        error_filter = np.insert(-1 * coefficients, 0, 1)
-        gain = np.sqrt(sum(error_filter * lpc_coefficients))
+        autocorr_coefficients = autocorrelation[autocorrelation.size/2:][:(order + 1)]
+        R = linalg.toeplitz(autocorr_coefficients[:order])
+        lpc_coefficients = np.dot(linalg.inv(R), autocorr_coefficients[1:order+1])
+        error_filter = np.insert(-1 * lpc_coefficients, 0, 1)
+        gain = np.sqrt(sum(error_filter * autocorr_coefficients))
         return gain, lpc_coefficients
 
     def _inverse_filter(self, window, gain, coefficients):
