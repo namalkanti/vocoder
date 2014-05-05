@@ -1,15 +1,17 @@
 import argparse
 import pyaudio
+import os
 import sys
 import threading,time
 
 import numpy as np
 import scipy as sp
 import scipy.signal as sig
-import scipy.io.wavfile as wav
+import scipy.io.wavfile as wavio
 
 from Analyzer import Analyzer
 from Synthesizer import Synthesizer
+from Vocoder import Vocoder
 
 def play_audio( data, p, fs):
     # play_audio plays audio with sampling rate = fs
@@ -60,14 +62,48 @@ def record_audio( odata, p, fs, record_seconds ):
     # copy to output
     np.copyto(odata[0:len(data)], data)
 
-def main():
-    signal = wav.read("allain.wav")
-    analyzer = Analyzer(signal[1], 10e-3, signal[0])
+def record_and_play_audio():
+    record_seconds = 5
+    fs = 44100
+    p = pyaudio.PyAudio()
+    odata = np.zeros(fs * record_seconds)
+    print "Recording audio for the next {0} seconds".format(record_seconds)
+    record_audio(odata, p, fs, record_seconds)
+    print "Audio has recorded, stand by for voice"
+    play_audio(odata, p, fs)
+    print "Encoding and decoding voice through vocoder"
+    analyzer = Analyzer(odata, 10e-3)
     lpc_frame_array = analyzer.encode()
     synthesizer = Synthesizer(lpc_frame_array)
-    arr = synthesizer.decode()
-    wav.write("allain_out.wav", signal[0], arr)
+    reconstructed_signal = synthesizer.decode()
+    print "Playing reconstructed audio"
+    play_audio(reconstructed_signal, p, fs)
+    p.terminate()
 
+def play_sample_audio():
+    print "Playing sample audio files"
+    os.chdir("wavs")
+    wavs = os.listdir(".")
+    vocoder = Vocoder()
+    p = pyaudio.PyAudio()
+    for wav in wavs:
+        print "Playing {0}".format(wav)
+        wav_info = wavio.read(wav)
+        play_audio(wav_info[1], p, wav_info[0])
+        lpc_frame_array = vocoder.encode(wav, 10e-3)
+        audio = vocoder.decode(lpc_frame_array)
+        play_audio(audio, p, vocoder.get_fs())
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--speak", help="Speak into the mic and encode your own audio",
+            action="store_true")
+    args = parser.parse_args()
+    if args.speak:
+        record_and_play_audio()
+    else:
+        play_sample_audio()
 
 if __name__ == "__main__":
     main()

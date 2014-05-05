@@ -1,4 +1,4 @@
-importn numpy as np
+import numpy as np
 import scipy as sp
 import scipy.io.wavfile as wav
 
@@ -21,7 +21,7 @@ class Vocoder():
         """
         Takes in a wav file and returns an lpcframe array for transmission.
         """
-        wav_info = self.get_array_from_wav(wav_file)
+        wav_info = self.get_array_from_wav_file(wav_file)
         self._fs = wav_info[0]
         wav_array = wav_info[1]
         analyzer = Analyzer(wav_array, frame_size, self.get_fs())
@@ -35,7 +35,8 @@ class Vocoder():
         if self.get_fs() != synthesizer.get_fs():
             raise ValueError, "lpc array has different sampling rate than vocoder"
         wav_array = synthesizer.decode()
-        self._write_array_to_wav_file(output_file, wav_array)
+        #self.write_array_to_wav_file(output_file, wav_array)
+        return wav_array
 
     def get_array_from_wav_file(self, wav_file):
         """
@@ -47,7 +48,7 @@ class Vocoder():
         """
         Writes and array to a wave file.
         """
-        wav.read(output_name, self.get_fs(), data)
+        wav.write(output_name, self.get_fs(), data)
 
     #Accessor methods
     def get_fs(self):
