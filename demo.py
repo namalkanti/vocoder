@@ -13,6 +13,8 @@ from Analyzer import Analyzer
 from Synthesizer import Synthesizer
 from Vocoder import Vocoder
 
+FRAME_SIZE = 10e-3
+
 def play_audio( data, p, fs):
     # play_audio plays audio with sampling rate = fs
     # data - audio data array
@@ -80,6 +82,18 @@ def record_and_play_audio():
     play_audio(reconstructed_signal, p, fs)
     p.terminate()
 
+def play_file(file_name):
+    print "Playing {0}".format(file_name)
+    vocoder= Vocoder()
+    p = pyaudio.PyAudio()
+    wav_info = wavio.read(file_name)
+    wav = wav_info[1]
+    play_audio(wav, p, wav_info[0])
+    lpc_frame_array = vocoder.encode(file_name, 10e-3)
+    audio = vocoder.decode(lpc_frame_array)
+    print "Playing decoded bits"
+    play_audio(audio, p, vocoder.get_fs())
+
 def play_sample_audio():
     print "Playing sample audio files"
     os.chdir("wavs")
@@ -99,9 +113,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--speak", help="Speak into the mic and encode your own audio",
             action="store_true")
+    parser.add_argument("-f", "--file", help="Pass in an audio file to encode and decode",
+            type=str)
     args = parser.parse_args()
     if args.speak:
         record_and_play_audio()
+    elif args.file:
+        play_file(args.file)
     else:
         play_sample_audio()
 
