@@ -49,7 +49,7 @@ def record_audio( odata, p, fs, record_seconds ):
     # p.terminate() # terminate pyAudio
     
     # open input stream
-    chunk = 1024
+    chunk = 16 
     istream = p.open(format=pyaudio.paFloat32, channels=1, rate=int(fs),input=True,frames_per_buffer=chunk)
 
     # record audio in chunks and append to frames
@@ -71,6 +71,7 @@ def record_and_play_audio():
     odata = np.zeros(fs * record_seconds)
     print "Recording audio for the next {0} seconds".format(record_seconds)
     record_audio(odata, p, fs, record_seconds)
+    wavio.write("before.wav", 44100, odata)
     print "Audio has recorded, stand by for voice"
     play_audio(odata, p, fs)
     print "Encoding and decoding voice through vocoder"
@@ -78,6 +79,7 @@ def record_and_play_audio():
     lpc_frame_array = analyzer.encode()
     synthesizer = Synthesizer(lpc_frame_array)
     reconstructed_signal = synthesizer.decode()
+    wavio.write("test.wav", 441000, reconstructed_signal)
     print "Playing reconstructed audio"
     play_audio(reconstructed_signal, p, fs)
     p.terminate()
