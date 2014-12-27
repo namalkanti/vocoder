@@ -48,7 +48,7 @@ def record_audio( odata, p, fs, record_seconds ):
     # p.terminate() # terminate pyAudio
     
     # open input stream
-    chunk = 16 
+    chunk = 8 
     istream = p.open(format=pyaudio.paFloat32, channels=1, rate=int(fs),input=True,frames_per_buffer=chunk)
 
     # record audio in chunks and append to frames
