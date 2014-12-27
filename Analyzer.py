@@ -7,6 +7,38 @@ from segmentaxis import segment_axis
 
 from LPCStructures import LPCFrameArrayBuilder, LPCFrame
 
+def estimate(window, order):
+    """
+    Runs an estimation on the window and returns an LPCFrame.
+    """
+    tapered_window = np.copy(window) * np.hamming(window.size)
+    gain, coefficients = lpc(tapered_window, order)
+    residue = inverse_filter(window, gain, coefficients)
+    return LPCFrame(residue, gain, coefficients)
+
+def lpc(signal, order):
+    """
+    Takes in a signal and determines lpc coefficients(through autocorrelation method) and gain for inverse filter.
+    This is a naive implementation. Do not expect speed.
+    Returns gain and lpc_coefficients as a tuple in that order.
+    """
+    length = signal.size
+    autocorrelation = sig.fftconvolve(signal, signal[::-1])
+    autocorr_coefficients = autocorrelation[autocorrelation.size/2:][:(order + 1)]
+    R = linalg.toeplitz(autocorr_coefficients[:order])
+    lpc_coefficients = np.dot(linalg.inv(R), autocorr_coefficients[1:order+1])
+    error_filter = np.insert(-1 * lpc_coefficients, 0, 1)
+    gain = np.sqrt(sum(error_filter * autocorr_coefficients))
+    return gain, lpc_coefficients
+
+def inverse_filter(window, gain, coefficients):
+    """
+    Uses the determined coeffcients to get acquire residue from a speech frame.
+    """
+    denominator = np.asarray([1])
+    numerator = np.insert(coefficients, 0, 1)
+    return sig.lfilter(numerator, denominator, window)/ gain
+
 class Analyzer():
     """
     Speech analyzer for vocoder. 
@@ -47,41 +79,8 @@ class Analyzer():
         frame_array_builder.set_fs(self.get_fs())
         frame_array_builder.set_frame_size(self.get_frame_size())
         for window in windows:
-            frame_array_builder.add_frames(self.estimate(window))
+            frame_array_builder.add_frames(estimate(window, self.get_order()))
         return frame_array_builder.build()
-
-    def estimate(self, window):
-        """
-        Runs an estimation on the window and returns an LPCFrame.
-        """
-        tapered_window = np.copy(window) * np.hamming(window.size)
-        gain, coefficients = self._lpc(tapered_window, self.get_order())
-        residue = self._inverse_filter(window, gain, coefficients)
-        return LPCFrame(residue, gain, coefficients)
-
-    def _lpc(self, signal, order):
-        """
-        Takes in a signal and determines lpc coefficients(through autocorrelation method) and gain for inverse filter.
-        This is a naive implementation. Do not expect speed.
-        Returns gain and lpc_coefficients as a tuple in that order.
-        """
-        length = signal.size
-        autocorrelation = sig.fftconvolve(signal, signal[::-1])
-        autocorr_coefficients = autocorrelation[autocorrelation.size/2:][:(order + 1)]
-        R = linalg.toeplitz(autocorr_coefficients[:order])
-        lpc_coefficients = np.dot(linalg.inv(R), autocorr_coefficients[1:order+1])
-        error_filter = np.insert(-1 * lpc_coefficients, 0, 1)
-        gain = np.sqrt(sum(error_filter * autocorr_coefficients))
-        return gain, lpc_coefficients
-
-    def _inverse_filter(self, window, gain, coefficients):
-        """
-        Uses the determined coeffcients to get acquire residue from a speech frame.
-        """
-        denominator = np.asarray([1])
-        numerator = np.insert(coefficients, 0, 1)
-        return sig.lfilter(numerator, denominator, window)/ gain
-
 
     #Accessor Methods
     def get_signal(self):
