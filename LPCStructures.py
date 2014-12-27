@@ -1,3 +1,4 @@
+import numpy as np
 
 class LPCFrame():
     """
@@ -21,8 +22,6 @@ class LPCFrame():
 
     def get_coefficients(self):
         return self._coefficients
-
-import numpy as np
 
 class LPCFrameArrayBuilder():
     """
