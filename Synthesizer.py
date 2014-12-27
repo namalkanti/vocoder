@@ -4,6 +4,15 @@ import numpy as np
 import scipy as sp
 import scipy.signal as sig
 
+def reconstruct(lpc_frame):
+    gain = lpc_frame.get_gain()
+    coefficients = lpc_frame.get_coefficients()
+    residue = process_residue(lpc_frame.get_residue())
+    return sig.lfilter(np.asarray([gain]), coefficients, residue) 
+
+def process_residue(residue):
+    return residue
+
 class Synthesizer():
     """
     Class decodes lpc packets into an array.
@@ -25,15 +34,6 @@ class Synthesizer():
     def _reconstruct_frames(self):
         frames = self.get_frame_array().get_frames()
         return np.asarray(map(self._reconstruct, frames))
-
-    def _reconstruct(self, lpc_frame):
-        gain = lpc_frame.get_gain()
-        coefficients = lpc_frame.get_coefficients()
-        residue = self._process_residue(lpc_frame.get_residue())
-        return sig.lfilter(np.asarray([gain]), coefficients, residue) 
-
-    def _process_residue(self, residue):
-        return residue
 
     def _merge_frames(self, audio_frames):
         lpc_frame_array = self.get_frame_array()
