@@ -5,50 +5,35 @@ import scipy.io.wavfile as wav
 from Analyzer import Analyzer
 from Synthesizer import Synthesizer
 
+from Mic import Mic
+
+from Local import Local
+
 class Vocoder():
     """
-    Can take in audio files and return lpc parameters, as well as 
-    return audio files from lpc parameters. Also carries out sound alteration.
+    Vocoder to do real time synthesis of an audio signal. 
+    Links to a VocoderInput and VocoderOutput object to provide 
+    I/O for the audio signal.
     """
 
-    def __init__(self, fs=44100):
+    def __init__(self, vocoder_in=Mic, vocoder_out=Local, fs=44100):
         """
         Creates a vocoder at a specified sampling rate.
         """
-        self._fs = 441000
+        self._fs = fs
+        self._in = vocoder_in
+        self._out = vocoder_out
+        self._callback = self.generate_callback()
 
-    def encode(self, wav_file, frame_size):
+    def generate_callback(self):
         """
-        Takes in a wav file and returns an lpcframe array for transmission.
+        Generates the callback function for the audio stream
         """
-        wav_info = self.get_array_from_wav_file(wav_file)
-        self._fs = wav_info[0]
-        wav_array = wav_info[1]
-        analyzer = Analyzer(wav_array, frame_size, self.get_fs())
-        return analyzer.encode()
-
-    def decode(self, lpc_frame_array, output_file="decoded_signal.wav"):
-        """
-        Takes in an lpcframe array and returns a wave file.
-        """
-        synthesizer = Synthesizer(lpc_frame_array)
-        if self.get_fs() != synthesizer.get_fs():
-            raise ValueError, "lpc array has different sampling rate than vocoder"
-        wav_array = synthesizer.decode()
-        #self.write_array_to_wav_file(output_file, wav_array)
-        return wav_array
-
-    def get_array_from_wav_file(self, wav_file):
-        """
-        Reads a wav file and gets an array and sampling rate from it.
-        """
-        return wav.read(wav_file)
-
-    def write_array_to_wav_file(self, output_name, data):
-        """
-        Writes and array to a wave file.
-        """
-        wav.write(output_name, self.get_fs(), data)
+        def callback(in_data, frame_count, time_info, flag):
+            """
+            Generated callback 
+            """
+            pass
 
     #Accessor methods
     def get_fs(self):
