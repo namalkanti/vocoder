@@ -41,7 +41,7 @@ class Synthesizer():
         lpc_length = lpc_frames.shape[0]
         samples_per_frame = lpc_frame_array.get_fs() * lpc_frame_array.get_frame_size()
         base_window = np.hamming(samples_per_frame * 2)
-        window = np.insert(base_window, base_window.size / 2, np.ones(samples_per_frame))
+        window = np.insert(base_window, base_window.size // 2, np.ones(samples_per_frame))
         windows = np.tile(window, (lpc_length, 1))
         windows[0, :samples_per_frame] = np.ones(samples_per_frame)
         windows[-1, -samples_per_frame:] = np.ones(samples_per_frame)
