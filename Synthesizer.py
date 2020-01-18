@@ -4,6 +4,8 @@ import numpy as np
 import scipy as sp
 import scipy.signal as sig
 
+from functools import reduce
+
 def reconstruct(lpc_frame):
     gain = lpc_frame.get_gain()
     coefficients = lpc_frame.get_coefficients()
@@ -33,7 +35,7 @@ class Synthesizer():
 
     def _reconstruct_frames(self):
         frames = self.get_frame_array().get_frames()
-        return np.asarray(map(self._reconstruct, frames))
+        return np.asarray(map(reconstruct, frames))
 
     def _merge_frames(self, audio_frames):
         lpc_frame_array = self.get_frame_array()
